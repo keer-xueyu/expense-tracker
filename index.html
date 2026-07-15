@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>记账本</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 首页 -->
+        <div class="page active" id="page-home">
+            <header class="app-header">
+                <div class="header-title">
+                    <h1>记账本</h1>
+                    <div class="title-underline"></div>
+                </div>
+                <div class="cycle-selector" id="cycleSelector">
+                    <span class="icon-wrap" id="icon-calendar-header"></span>
+                    <span class="selector-text" id="cycleText">2026年7月</span>
+                    <span class="icon-wrap icon-arrow" id="icon-arrow-header"></span>
+                </div>
+            </header>
+
+            <section class="expense-card">
+                <div class="card-left">
+                    <div class="expense-label">本期总消费 <span class="icon-wrap icon-eye" id="icon-eye"></span></div>
+                    <div class="expense-amount">
+                        <span class="currency">¥</span>
+                        <span id="totalExpense">0.00</span>
+                    </div>
+                    <div class="expense-compare">
+                        <span class="compare-label">较上月</span>
+                        <span class="compare-value down" id="compareValue">-0%</span>
+                    </div>
+                </div>
+                <div class="card-right">
+                    <div class="mascot-wrapper">
+                        <img src="assets/fish-mascot.png" alt="小鱼" class="mascot-img">
+                    </div>
+                </div>
+
+                <div class="expense-stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon income-icon" id="icon-income"></div>
+                        <div class="stat-info">
+                            <div class="stat-name">本月收入</div>
+                            <div class="stat-value income">¥<span id="monthIncome">0</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon budget-icon" id="icon-budget"></div>
+                        <div class="stat-info">
+                            <div class="stat-name">本月预算</div>
+                            <div class="stat-value">¥<span id="monthBudget">0</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon remaining-icon" id="icon-remaining"></div>
+                        <div class="stat-info">
+                            <div class="stat-name">剩余预算</div>
+                            <div class="stat-value remaining">¥<span id="remainingBudget">0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="category-row">
+                <div class="category-list" id="categoryList"></div>
+            </section>
+
+            <section class="detail-card">
+                <div class="detail-header">
+                    <h2>记账明细</h2>
+                </div>
+                <div class="detail-list" id="detailList"></div>
+            </section>
+        </div>
+
+        <!-- 统计页面 -->
+        <div class="page" id="page-stats">
+            <header class="page-header">
+                <h1 class="page-title-with-icon"><span class="icon-wrap" id="icon-page-stats"></span>消费统计</h1>
+                <div class="stats-period">
+                    <span id="statsPeriod">2026-06-16 至 2026-07-15</span>
+                </div>
+            </header>
+
+            <section class="stats-summary">
+                <div class="summary-card">
+                    <div class="summary-label">总消费</div>
+                    <div class="summary-value expense-color" id="statsTotalExpense">¥0.00</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">日均消费</div>
+                    <div class="summary-value" id="statsDailyAvg">¥0.00</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">记录数</div>
+                    <div class="summary-value" id="statsRecordCount">0笔</div>
+                </div>
+            </section>
+
+            <section class="chart-section">
+                <div class="chart-header">
+                    <h2>分类消费柱状图</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="categoryBarChart"></canvas>
+                </div>
+            </section>
+
+            <section class="category-breakdown">
+                <h2>分类明细</h2>
+                <div class="breakdown-list" id="breakdownList"></div>
+            </section>
+        </div>
+
+        <!-- 日历页面 -->
+        <div class="page" id="page-calendar">
+            <header class="page-header">
+                <h1 class="page-title-with-icon"><span class="icon-wrap" id="icon-page-calendar"></span>周期选择</h1>
+            </header>
+
+            <section class="calendar-card">
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="prevMonth"><span class="icon-wrap" id="icon-chevron-left"></span></button>
+                    <span class="calendar-month" id="calendarMonth">2026年7月</span>
+                    <button class="calendar-nav" id="nextMonth"><span class="icon-wrap" id="icon-chevron-right"></span></button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </section>
+
+            <section class="range-card">
+                <div class="range-header">
+                    <h2>已选周期</h2>
+                    <button class="clear-btn" id="clearRange">清除</button>
+                </div>
+                <div class="range-display">
+                    <div class="range-item">
+                        <span class="range-label">起始日期</span>
+                        <span class="range-value" id="startDate">点击选择</span>
+                    </div>
+                    <div class="range-arrow-wrap" id="icon-arrow-right"></div>
+                    <div class="range-item">
+                        <span class="range-label">结束日期</span>
+                        <span class="range-value" id="endDate">点击选择</span>
+                    </div>
+                </div>
+                <div class="range-info">
+                    <span id="rangeDays">共 0 天</span>
+                    <span id="rangeExpense">消费 ¥0.00</span>
+                </div>
+                <button class="apply-btn" id="applyRange">应用此周期</button>
+            </section>
+        </div>
+
+        <!-- 记账页面 -->
+        <div class="page" id="page-add">
+            <header class="page-header add-header">
+                <button class="back-btn" id="backFromAdd"><span class="icon-wrap" id="icon-back-add"></span></button>
+                <h1>记一笔</h1>
+                <button class="save-btn" id="saveRecord"><span class="icon-wrap" id="icon-save"></span>保存</button>
+            </header>
+
+            <section class="add-amount-section">
+                <div class="amount-type-tabs">
+                    <button class="type-tab active" data-type="expense">支出</button>
+                    <button class="type-tab" data-type="income">收入</button>
+                </div>
+                <div class="amount-input-wrap">
+                    <span class="amount-currency">¥</span>
+                    <input type="number" class="amount-input" id="amountInput" placeholder="0.00" step="0.01">
+                </div>
+            </section>
+
+            <section class="add-category-section">
+                <h2>选择分类</h2>
+                <div class="category-grid" id="addCategoryGrid"></div>
+            </section>
+
+            <section class="add-info-section">
+                <div class="info-row">
+                    <span class="info-label"><span class="icon-wrap" id="icon-info-calendar"></span>日期</span>
+                    <input type="date" class="info-input" id="addDate">
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><span class="icon-wrap" id="icon-info-note"></span>备注</span>
+                    <input type="text" class="info-input" id="addRemark" placeholder="添加备注...">
+                </div>
+            </section>
+
+            <div class="add-actions">
+                <button class="add-action-btn cancel" id="cancelAdd">取消</button>
+                <button class="add-action-btn confirm" id="confirmAdd">确认记账</button>
+            </div>
+        </div>
+
+        <!-- 我的页面 -->
+        <div class="page" id="page-mine">
+            <header class="page-header">
+                <h1 class="page-title-with-icon"><span class="icon-wrap" id="icon-page-mine"></span>我的</h1>
+            </header>
+
+            <section class="profile-card">
+                <div class="profile-avatar" id="profileAvatar" title="点击上传头像">
+                    <span class="avatar-text" id="avatarText">记</span>
+                    <div class="avatar-overlay">
+                        <span class="icon-wrap" id="icon-camera"></span>
+                    </div>
+                    <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name" id="profileName" contenteditable="false">记账用户</div>
+                    <div class="profile-id">ID: 100001</div>
+                </div>
+                <button class="edit-btn" id="editProfile"><span class="icon-wrap" id="icon-edit"></span></button>
+            </section>
+
+            <section class="account-card">
+                <h2>账户信息</h2>
+                <div class="account-list">
+                    <div class="account-item">
+                        <span class="account-icon-wrap" id="icon-acc-calendar"></span>
+                        <span class="account-label">注册时间</span>
+                        <span class="account-value" id="registerDate">2026-01-01</span>
+                    </div>
+                    <div class="account-item">
+                        <span class="account-icon-wrap" id="icon-acc-chart"></span>
+                        <span class="account-label">记账天数</span>
+                        <span class="account-value" id="accountDays">30天</span>
+                    </div>
+                    <div class="account-item">
+                        <span class="account-icon-wrap" id="icon-acc-note"></span>
+                        <span class="account-label">记账笔数</span>
+                        <span class="account-value" id="accountRecords">0笔</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-card">
+                <h2>设置</h2>
+                <div class="settings-list">
+                    <div class="settings-item" id="budgetItem">
+                        <span class="settings-label">预算设置</span>
+                        <span class="settings-value" id="budgetValue">¥10,000/月</span>
+                        <span class="icon-wrap" id="icon-set-arrow-1"></span>
+                    </div>
+                    <div class="settings-item" id="logoutItem">
+                        <span class="settings-label">退出登录</span>
+                        <span class="icon-wrap" id="icon-set-arrow-2"></span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 底部导航 -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-page="home">
+                <span class="icon-wrap" id="icon-nav-home"></span>
+                <span class="nav-text">首页</span>
+            </a>
+            <a href="#" class="nav-item" data-page="stats">
+                <span class="icon-wrap" id="icon-nav-stats"></span>
+                <span class="nav-text">统计</span>
+            </a>
+            <a href="#" class="nav-item nav-add">
+                <span class="nav-icon-add">+</span>
+                <span class="nav-text">记一笔</span>
+            </a>
+            <a href="#" class="nav-item" data-page="calendar">
+                <span class="icon-wrap" id="icon-nav-calendar"></span>
+                <span class="nav-text">日历</span>
+            </a>
+            <a href="#" class="nav-item" data-page="mine">
+                <span class="icon-wrap" id="icon-nav-mine"></span>
+                <span class="nav-text">我的</span>
+            </a>
+        </nav>
+
+        <!-- 编辑昵称弹窗 -->
+        <div class="modal-mask" id="editModal" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>编辑昵称</h3>
+                    <button class="modal-close" id="closeModal"><span class="icon-wrap" id="icon-modal-close"></span></button>
+                </div>
+                <div class="modal-body">
+                    <label>昵称</label>
+                    <input type="text" id="nicknameInput" maxlength="20" placeholder="请输入昵称">
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn cancel" id="cancelEdit">取消</button>
+                    <button class="modal-btn confirm" id="confirmEdit">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 预算设置弹窗 -->
+        <div class="modal-mask" id="budgetModal" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>设置预算</h3>
+                    <button class="modal-close" id="closeBudgetModal"><span class="icon-wrap" id="icon-modal-close-budget"></span></button>
+                </div>
+                <div class="modal-body">
+                    <label>每月预算（元）</label>
+                    <input type="number" id="budgetInput" min="0" step="100" placeholder="请输入预算金额">
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn cancel" id="cancelBudget">取消</button>
+                    <button class="modal-btn confirm" id="confirmBudget">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 登录/注册弹窗 -->
+        <div class="modal-mask" id="authModal" style="display:none;">
+            <div class="modal-card">
+                <div class="auth-tabs">
+                    <button type="button" class="auth-tab active" id="loginTab">登录</button>
+                    <button type="button" class="auth-tab" id="registerTab">注册</button>
+                </div>
+                <div class="modal-body">
+                    <div id="loginForm">
+                        <label>用户名</label>
+                        <input type="text" id="loginUsername" maxlength="20" placeholder="请输入用户名">
+                        <label style="margin-top:12px;">密码</label>
+                        <input type="password" id="loginPassword" maxlength="20" placeholder="请输入密码">
+                    </div>
+                    <div id="registerForm" style="display:none;">
+                        <label>用户名</label>
+                        <input type="text" id="registerUsername" maxlength="20" placeholder="请输入用户名">
+                        <label style="margin-top:12px;">密码</label>
+                        <input type="password" id="registerPassword" maxlength="20" placeholder="请输入密码">
+                        <label style="margin-top:12px;">确认密码</label>
+                        <input type="password" id="registerPasswordConfirm" maxlength="20" placeholder="请再次输入密码">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn confirm" id="confirmAuth">登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/icons.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
